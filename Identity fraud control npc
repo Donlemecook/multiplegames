@@ -1,0 +1,360 @@
+-- Combined "Something Bad Will Happen" script
+-- Adonis bypass + Turtle-Lib GUI + SEWH Auto Farm toggle (loads from GitHub)
+-- Paste into your executor
+
+-- ============================
+-- Adonis AntiCheat bypass (from your pasted code)
+-- ============================
+
+--bypass AntiCheat adonis
+local getinfo = getinfo or debug.getinfo
+local DEBUG = false
+local Hooked = {}
+
+local Detected, Kill
+
+-- try to preserve identities for some exploit environments
+if setthreadidentity then
+    pcall(setthreadidentity, 2)
+end
+
+-- scan gc for Adonis kill/detected hooks and hook them
+for i, v in getgc and getgc(true) or pairs({}) do
+    if typeof(v) == "table" then
+        local DetectFunc = rawget(v, "Detected")
+        local KillFunc = rawget(v, "Kill")
+    
+        if typeof(DetectFunc) == "function" and not Detected then
+            Detected = DetectFunc
+            local Old; Old = hookfunction(Detected, function(Action, Info, NoCrash)
+                if Action ~= "_" then
+                    if DEBUG then
+                        warn(("Adonis AntiCheat flagged\nMethod: %s\nInfo: %s"):format(tostring(Action), tostring(Info)))
+                    end
+                end
+                return true
+            end)
+            table.insert(Hooked, Detected)
+        end
+
+        if rawget(v, "Variables") and rawget(v, "Process") and typeof(KillFunc) == "function" and not Kill then
+            Kill = KillFunc
+            local Old; Old = hookfunction(Kill, function(Info)
+                if DEBUG then
+                    warn(("Adonis AntiCheat tried to kill (fallback): %s"):format(tostring(Info)))
+                end
+            end)
+            table.insert(Hooked, Kill)
+        end
+    end
+end
+
+-- hook debug.info if possible
+if rawget then
+    local ok, old = pcall(function()
+        return hookfunction(getrenv().debug.info, newcclosure(function(...)
+            local LevelOrFunc, Info = ...
+            if Detected and LevelOrFunc == Detected then
+                if DEBUG then
+                    warn("zins | adonis bypassed")
+                end
+                return coroutine.yield(coroutine.running())
+            end
+            return old(...)
+        end))
+    end)
+    -- ignore failure
+end
+
+if setthreadidentity then
+    pcall(setthreadidentity, 7)
+end
+
+-- ============================
+-- GUI and main script (Turtle-Lib)
+-- ============================
+
+-- safely load Turtle-Lib
+local function safeLoadURL(url)
+    local ok, res = pcall(function()
+        return game:HttpGet(url)
+    end)
+    if not ok then
+        return false, res
+    end
+    local f, err = loadstring(res)
+    if not f then
+        return false, err
+    end
+    local ok2, out = pcall(f)
+    return ok2, out
+end
+
+local turtleLibURL = "https://raw.githubusercontent.com/Turtle-Brand/Turtle-Lib/main/source.lua"
+local ok, library = pcall(function()
+    return loadstring(game:HttpGet(turtleLibURL))()
+end)
+if not ok or not library then
+    warn("Failed to load Turtle-Lib GUI. Error:", library)
+    return
+end
+
+-- Create windows/tabs
+local mainTab = library:Window("Main")
+_G.BlockRemote = true
+_G.NoDmg = false
+_G.AntiRagdoll = false
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+-- ============================
+-- Namecall hook for blocking remotes / no dmg / anti ragdoll
+-- ============================
+
+local original
+local namecallHook = newcclosure(function(self, ...)
+    local method = getnamecallmethod and getnamecallmethod() or "__namecall"
+    local args = {...}
+
+    if _G.BlockRemote and typeof(self) == "Instance" then
+        local success, name = pcall(function() return self.Name end)
+        if success and name then
+            if (name == "DamagePlayerClient") and (method == "FireServer" or method == "fireServer") then
+                args[1] = 0
+                args[2] = false
+                return original(self, unpack(args))
+            elseif (name == "Asynchronous") and (method == "FireServer" or method == "fireServer") then
+                local action = args[1]
+                if _G.NoDmg and (action == "HurtSelf" or action == "CharHit") then
+                    return nil
+                end
+                if _G.AntiRagdoll and action == "UpdateRagdoll" and args[2] == true then
+                    args[2] = false
+                    return original(self, unpack(args))
+                end
+            end
+        end
+    end
+
+    return original(self, ...)
+end)
+
+local function enableHook()
+    if hookmetamethod then
+        original = hookmetamethod(game, "__namecall", namecallHook)
+    else
+        local gm = getrawmetatable(game)
+        original = gm.__namecall
+        setreadonly(gm, false)
+        gm.__namecall = namecallHook
+        setreadonly(gm, true)
+    end
+end
+
+-- try to enable hook protectedly
+pcall(enableHook)
+
+-- Keep a small heartbeat connection (as in original)
+pcall(function() RunService.Heartbeat:Connect(function() end) end)
+
+-- ============================
+-- Inf Stamina (closure search using ohaux) as in original
+-- ============================
+local aux = nil
+do
+    -- try to load the ohaux helper used in original (Upbolt/Hydroxide's ohaux)
+    local ohaux_url = "https://raw.githubusercontent.com/Upbolt/Hydroxide/revision/ohaux.lua"
+    pcall(function()
+        local ok2, val = safeLoadURL(ohaux_url)
+        if ok2 then
+            aux = val
+        end
+    end)
+end
+
+local scriptPath = nil
+local closure1, closure2 = nil, nil
+pcall(function()
+    if game:GetService("ReplicatedStorage"):FindFirstChild("Resources") then
+        scriptPath = game:GetService("ReplicatedStorage").Resources.Client:FindFirstChild("SprintHandler")
+        if not scriptPath then
+            -- original uses ReplicatedStorage.Resources.Client.SprintHandler; try to index safely
+            scriptPath = game:GetService("ReplicatedStorage").Resources and game:GetService("ReplicatedStorage").Resources.Client and game:GetService("ReplicatedStorage").Resources.Client.SprintHandler or nil
+        end
+    end
+    if aux and scriptPath then
+        local closureName = "startSprint"
+        local closureConstants = {
+            [1] = "MoveDirection",
+            [2] = "Magnitude",
+            [3] = 0.2,
+            [4] = "Play",
+            [5] = "DestroyIdentifier",
+            [6] = "BaseRegen"
+        }
+        closure1 = aux.searchClosure(scriptPath, closureName, 10, closureConstants)
+        closure2 = aux.searchClosure(scriptPath, closureName, 4, closureConstants)
+    end
+end)
+
+mainTab:Toggle("Inf Stamina", false, function(state)
+    if closure1 then
+        pcall(function()
+            debug.getupvalue(closure1, 10)["MaxStamina"] = state and 1e308 or 100
+        end)
+    end
+    if closure2 then
+        pcall(function()
+            debug.setupvalue(closure2, 4, state and 1e308 or 100)
+        end)
+    end
+end)
+
+mainTab:Toggle("No Damage (maybe)", false, function(state)
+    _G.NoDmg = state
+end)
+
+mainTab:Toggle("Anti Ragdoll", false, function(state)
+    _G.AntiRagdoll = state
+end)
+
+-- ============================
+-- Emote window (copied from your pasted script)
+-- ============================
+local emoteTab = library:Window("Free Emote")
+
+local emoteNames = {
+    "Birthday","Boppin","ByeByeBye","Caramelldansen","CatBath","ChampionofLight","Chess","ChillSit","ClassC14","Cosmic",
+    "CryingDance","DancingDomino","DieLit","Doodle","DoshBag","DoshSpread","FollowMe","Ena","Gacha","GetDown","Getaway","Griddy",
+    "HeatAttack","Hug","OneTwoThree","Hyadain","InternetYamero","Jiggy","KarateMan","KillMeBaby","KontonBoogie","Kyoufuu",
+    "LaidBackShuffle","LasPlagas","LethalCompany","LiarDancer","Lockstep","LoveHate","March","Melancholy","Mesmerizer","Number",
+    "OhNoes","PartyHips","PbjTime","PoPiPo","PointAt","RestockIt","Rin","RollingStar","SaiyanWalk","Scary","SewhStomp","Shika",
+    "SkeletonOrchestra","SlenderJump","Slick","Smug","Sneaky","Static","SuperJumpy","Territory","TuringLove","WasntMe","WhamWham",
+    "WhatUWant","WildSide","Yoinky","Yorokonde","Logansbirthday"
+}
+
+local selectedEmote = emoteNames[1]
+local Synchronous = nil
+pcall(function()
+    Synchronous = game:GetService("ReplicatedStorage").Communication.EventObjects.Synchronous
+end)
+
+local cancelBlocked = false
+local hook_cancel = false
+
+local function setupCancelHook()
+    if hook_cancel then return end
+    hook_cancel = true
+    pcall(function()
+        local old; old = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            local args = { ... }
+            if cancelBlocked and self == Synchronous and method == "InvokeServer" and args[1] == "CancelEmote" then
+                return nil
+            end
+            return old(self, ...)
+        end)
+    end)
+end
+
+emoteTab:Dropdown("Choose Emote", emoteNames, function(option)
+    selectedEmote = option
+end)
+
+emoteTab:Toggle("Try Emote", false, function(state)
+    if state then
+        setupCancelHook()
+        cancelBlocked = true
+        pcall(function()
+            if Synchronous then
+                Synchronous:InvokeServer("TryEmote", selectedEmote)
+            end
+        end)
+    else
+        cancelBlocked = false
+    end
+end)
+
+-- ============================
+-- Credit tab (from pasted script)
+-- ============================
+local CreditTab = library:Window("Credit")
+CreditTab:Label("Credits: Cáo Mod", true)
+CreditTab:Label("The script is open source", true)
+CreditTab:Label("Pls support me by subscribe Cáo Mod", true)
+
+-- ============================
+-- Auto Farm Tab: load the GitHub SEWH-Win-AF.lua inside GUI
+-- ============================
+
+local autofarmTab = library:Window("Auto Farm")
+
+local SEWH_URL = "https://raw.githubusercontent.com/FOXTROXHACKS/Roblox-Scripts/refs/heads/main/SEWH-Win-AF.lua"
+_G.SEWHLoaded = _G.SEWHLoaded or false
+
+autofarmTab:Toggle("SEWH Auto Farm (GitHub)", false, function(state)
+    if state then
+        if _G.SEWHLoaded then
+            library:Notification("SEWH", "SEWH script already loaded.", 3)
+            return
+        end
+        _G.SEWHLoaded = true
+        spawn(function()
+            local ok, err = pcall(function()
+                local scriptTxt = game:HttpGet(SEWH_URL)
+                local func, loadErr = loadstring(scriptTxt)
+                if not func then
+                    error(("Failed to load SEWH: %s"):format(tostring(loadErr)))
+                end
+                func()
+            end)
+            if not ok then
+                warn("Failed to load/run SEWH script:", err)
+                library:Notification("SEWH load failed", tostring(err), 6)
+                _G.SEWHLoaded = false
+            else
+                library:Notification("SEWH", "SEWH script loaded successfully.", 4)
+            end
+        end)
+    else
+        -- can't guarantee unloading of remote script; just warn
+        library:Notification("SEWH", "Toggle off: remote script may still be running (depends on script).", 5)
+    end
+end)
+
+-- Extra buttons: quick load (in case toggle misses)
+autofarmTab:Button("Load SEWH Now", function()
+    if _G.SEWHLoaded then
+        library:Notification("SEWH", "Already loaded.", 3)
+        return
+    end
+    _G.SEWHLoaded = true
+    spawn(function()
+        local ok, err = pcall(function()
+            local scriptTxt = game:HttpGet(SEWH_URL)
+            local func, loadErr = loadstring(scriptTxt)
+            if not func then error(("Load error: %s"):format(tostring(loadErr))) end
+            func()
+        end)
+        if not ok then
+            warn("Failed to load/run SEWH script:", err)
+            library:Notification("SEWH load failed", tostring(err), 6)
+            _G.SEWHLoaded = false
+        else
+            library:Notification("SEWH", "SEWH script loaded successfully.", 4)
+        end
+    end)
+end)
+
+autofarmTab:Label("Notes:", true)
+autofarmTab:Label("- SEWH is loaded from the GitHub raw URL above.", true)
+autofarmTab:Label("- If the server blocks HttpGet, this will fail.", true)
+autofarmTab:Label("- Toggle off doesn't guarantee stop; depends on remote script.", true)
+
+-- ============================
+-- End
+-- ============================
+library:Notification("Combined Script", "Adonis bypass + GUI loaded. Use Auto Farm tab to load SEWH.", 5)
