@@ -1,0 +1,24 @@
+-- Enable "Keep" behavior
+getgenv().KeepFarm = true  -- like KeepIY
+getgenv().WebhookURL = "https://discord.com/api/webhooks/1410643709061496924/Y8KvvcTJ2FUZGm8dQA0sHPlveZYfcPiR3VjRPsaulyGERQbqn5cr_eTb7t3zlJlVsX3Z"
+getgenv().AutoFarm = true
+getgenv().hop = "old"
+
+-- Teleport-safe auto-execute
+local Players = game:GetService("Players")
+local TeleportCheck = false
+Players.LocalPlayer.OnTeleport:Connect(function()
+    if getgenv().KeepFarm and not TeleportCheck and queueteleport then
+        TeleportCheck = true
+        queueteleport([[
+            getgenv().KeepFarm = true
+            getgenv().WebhookURL = "https://discord.com/api/webhooks/1410643709061496924/Y8KvvcTJ2FUZGm8dQA0sHPlveZYfcPiR3VjRPsaulyGERQbqn5cr_eTb7t3zlJlVsX3Z"
+            getgenv().AutoFarm = true
+            getgenv().hop = "old"
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/Farm%20Diamond%20v2.lua"))()
+        ]])
+    end
+end)
+
+-- Immediate execution
+loadstring(game:HttpGet("https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/Farm%20Diamond%20v2.lua"))()
