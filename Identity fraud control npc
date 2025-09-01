@@ -1,4 +1,4 @@
--- Loadstring: loadstring(game:HttpGet("https://pastebin.com/raw/TxtihXPH"))()
+-- Loadstring: loadstring(game:HttpGet("https://raw.githubusercontent.com/Donlemecook/multiplegames/refs/heads/main/Identity%20fraud%20control%20npc"))()
 --[[
 Notes:
 - Only capable of controlling NPCs with network ownership mode set to auto
