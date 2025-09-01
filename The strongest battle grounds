@@ -1,0 +1,17 @@
+local function runScript(url)
+    local scriptFunc = loadstring(game:HttpGet(url))
+    if scriptFunc then
+        scriptFunc()
+    else
+        warn("Failed to load script from:", url)
+    end
+end
+
+-- Run them one after the other
+runScript("https://raw.githubusercontent.com/YQANTGV2/YQANTGV2/refs/heads/main/All%20Tech")
+wait(1) -- Delay before next script (adjust as needed)
+
+runScript("https://raw.githubusercontent.com/Cyborg883/InstantLethal/refs/heads/main/Protected_5983112998592296.lua")
+wait(1)
+
+runScript("https://raw.githubusercontent.com/Cyborg883/OreoTech/refs/heads/main/Protected_6856895483929371.lua")
