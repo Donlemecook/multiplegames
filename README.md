@@ -1,4 +1,6 @@
-Auto Diamond 99.lua use auto execute for better result.
+Auto Diamond 99 use auto execute for better result.
+
+[Beta] Auto Diamond no serverhop auto raid and get diamonds
 
 Identity fraud control npc control's npc that is normally uncontrollable except stan he is impossible to control.
 
