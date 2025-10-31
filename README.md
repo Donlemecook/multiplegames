@@ -9,6 +9,7 @@ Killaura is normally for deadrails but i am using it for any game.
 The strongest battle grounds its just macro that will auto do tech's for you.
 
 [🎃] something evil will happen
+
     AFK Auto Teleport Script
     ✅ Teleports the executing player safely to custom floor parts
     ✅ Cleans workspace and ReplicatedStorage continuously
