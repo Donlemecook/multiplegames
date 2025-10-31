@@ -8,4 +8,11 @@ Killaura is normally for deadrails but i am using it for any game.
 
 The strongest battle grounds its just macro that will auto do tech's for you.
 
-[RECODE] something evil will happen its a script for that game it have auto win and less damage, infinite stamina, no ragdoll.
+[🎃] something evil will happen
+    AFK Auto Teleport Script
+    ✅ Teleports the executing player safely to custom floor parts
+    ✅ Cleans workspace and ReplicatedStorage continuously
+    ✅ Respawns missing custom floor parts automatically
+    ✅ Removes Map.Environment and Map.Constant.StopFall continuously
+    ✅ Start / Stop GUI with draggable frame
+    ✅ Prevents duplicates on re-execution
