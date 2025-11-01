@@ -10,10 +10,11 @@ The strongest battle grounds its just macro that will auto do tech's for you.
 
 [🎃] something evil will happen
 
-    AFK Auto Teleport Script
-    ✅ Teleports the executing player safely to custom floor parts
-    ✅ Cleans workspace and ReplicatedStorage continuously
-    ✅ Respawns missing custom floor parts automatically
-    ✅ Removes Map.Environment and Map.Constant.StopFall continuously
-    ✅ Start / Stop GUI with draggable frame
-    ✅ Prevents duplicates on re-execution
+🎃 SEWH AutoFarm
+✅ Teleports player safely to random custom parts every 5 seconds
+✅ Slightly above each part (no falling or ragdoll)
+✅ Always deletes StopFall + FallRegions safely
+✅ Prevents duplicates and old scripts/GUI
+✅ Start / Stop GUI (draggable, clean)
+✅ Keeps all other workspace folders intact
+✅ Shop Fixed
