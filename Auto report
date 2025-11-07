@@ -65,11 +65,14 @@ local words = {
 	['hack'] = 'Scamming',
 	['download'] = 'Scamming',
 	['youtube'] = 'Offsite Links',
-    ['Crack'] = 'Bullying',
+    ['Crack'] = 'Dating/Sex',
     ['Noah'] = 'Bullying',
     ['Krizta'] = 'Bullying',
-    ['train'] = 'Bullying',
-    ['Whip it out'] = 'Bullying'
+    ['train'] = 'Dating/Sex',
+    ['Whip it out'] = 'Dating/Sex',
+    ['Freak'] = 'Bullying',
+    ['sins'] = 'Dating/Sex'
+
 }
 
 local players = game:GetService('Players')
