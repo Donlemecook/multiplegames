@@ -65,10 +65,10 @@ local words = {
 	['hack'] = 'Scamming',
 	['download'] = 'Scamming',
 	['youtube'] = 'Offsite Links',
-  ['Crack'] = 'Dating'
-  ['Noah'] = 'Bullying'
-  ['Krizta'] = 'Bullying'
-  ['train'] = 'Dating'
+  ['Crack'] = 'Dating',
+  ['Noah'] = 'Bullying',
+  ['Krizta'] = 'Bullying',
+  ['train'] = 'Dating',
   ['Whip it out'] = 'Dating'
 }
 
